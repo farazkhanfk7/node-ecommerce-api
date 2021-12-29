@@ -1,0 +1,30 @@
+{
+  "name": "node-ecommerce-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farazkhanfk7/node-ecommerce-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/farazkhanfk7/node-ecommerce-api/issues"
+  },
+  "homepage": "https://github.com/farazkhanfk7/node-ecommerce-api#readme",
+  "dependencies": {
+    "config": "^3.3.6",
+    "express": "^4.17.2",
+    "joi": "^17.5.0",
+    "mongoose": "^6.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
