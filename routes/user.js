@@ -21,7 +21,7 @@ router.post('/', async (req,res)=>{
     // validate req body
     const result = validateUser(req.body)
     if(result.error){
-        return res.send(400).json({ error: result.error.details[0].message})
+        return res.status(400).json({ error: result.error.details[0].message})
     }
     // create an object
     try {

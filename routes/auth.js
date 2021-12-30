@@ -3,7 +3,7 @@ const router = express.Router()
 const joi = require('joi')
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
-const auth = require('../middleware/auth')
+const { auth, authAdmin } = require('../middleware/auth')
 
 const validateUser = (user) => {
     const schema = joi.object({

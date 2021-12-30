@@ -19,4 +19,14 @@ const auth = (req,res,next) => {
     }
 }
 
-module.exports = auth;
+const authAdmin = (req, res, next) => {
+    auth(req, res, () => {
+        if (req.user.isAdmin){
+            next();
+        } else {
+            return res.status(403).json({ msg : "Access denied. Admins Only"});
+        }
+    });
+}
+
+module.exports = { auth, authAdmin };
