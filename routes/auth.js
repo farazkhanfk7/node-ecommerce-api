@@ -3,6 +3,7 @@ const router = express.Router()
 const joi = require('joi')
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
+const auth = require('../middleware/auth')
 
 const validateUser = (user) => {
     const schema = joi.object({
@@ -15,7 +16,7 @@ const validateUser = (user) => {
 }
 
 // route GET api/auth ( Current User details )
-router.get('/', auth, async (req,res) => {
+router.get('/me', auth, async (req,res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
         res.json(user);
