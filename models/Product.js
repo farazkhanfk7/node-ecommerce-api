@@ -15,7 +15,8 @@ const ProductSchema = new mongoose.Schema({
     },
     categories: [ String ],
     size: {
-        type: String
+        type: String,
+        enum: ['S','M','L','XL','XXL']
     },
     color: {
         type: String
@@ -26,4 +27,4 @@ const ProductSchema = new mongoose.Schema({
     }
 });
 
-module.exports = User = mongoose.model('product',ProductSchema)
+module.exports = Product = mongoose.model('product',ProductSchema)
