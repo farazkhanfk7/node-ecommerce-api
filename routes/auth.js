@@ -6,17 +6,26 @@ const bcrypt = require('bcrypt')
 
 const validateUser = (user) => {
     const schema = joi.object({
-        name: joi.string().min(2).required(),
         email: joi.string().email(),
-        password: joi.string().min(2).required(),
-        isAdmin : joi.boolean()
+        password: joi.string().min(2).required()
     })
 
     const result = schema.validate(user)
     return result
 }
 
-// Register
+// route GET api/auth ( Current User details )
+router.get('/', auth, async (req,res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json(user);
+    } catch(err){
+        console.error(err.message);
+        res.status(500).json({ msg : "Server Error"});
+    }
+});
+
+// Login
 router.post('/', async (req,res)=>{
     // validate req body
     const result = validateUser(req.body)
@@ -25,20 +34,17 @@ router.post('/', async (req,res)=>{
     }
     // create an object
     try {
-        const newUser = {
-            name : req.body.name,
-            email: req.body.email,
-            password: req.body.password
+        const { email, password } = req.body;
+        // check if user exists
+        const user = await User.findOne({ email : email })
+        if(!user){
+            return res.send(401).json({error:"User not registered"})
         }
-        const user = new User(newUser)
-        if (req.body.isAdmin){
-            user.isAdmin = true
+        // compare password
+        const isMatch = await bcrypt.compare(password, user.password)
+        if(!isMatch){
+            return res.send(401).json({error:"Invalid credentials"})
         }
-        // encrypt password
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(user.password, salt);
-        // save user
-        await user.save()
         // return jwt token
         const token = user.generateAuthToken();
         return res.send(token);

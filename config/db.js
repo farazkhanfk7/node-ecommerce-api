@@ -3,8 +3,13 @@ const config = require('config')
 const dbURL = config.get("mongoURI")
 
 const connectDB = async () => {
-    await mongoose.connect(dbURL)
-    console.log("MongoDB Connected")
+    try {
+        await mongoose.connect(dbURL)
+        console.log("MongoDB Connected")
+    } catch(err){
+        console.error(err.message)
+        process.exit(1);
+    }
 }
 
 module.exports = connectDB;
