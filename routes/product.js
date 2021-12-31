@@ -7,7 +7,7 @@ const Product = require('../models/Product')
 const validateProduct = (product) => {
     const schema = joi.object({
         title: joi.string().min(2).required(),
-        description: joi.string().email(),
+        description: joi.string().required(),
         img: joi.string().min(2).required(),
         categories : joi.array().items(joi.string()),
         size : joi.string().valid('S','M','L','XL','XXL'),
@@ -19,12 +19,28 @@ const validateProduct = (product) => {
     return result
 }
 
+// Get Product by ID
+router.get('/:id', auth, async (req,res) => {
+    try{
+        const product = await Product.findById(req.params.id)
+        if (!product){
+            return res.status(404).json({error:"No Object found"})
+        }
+        res.send(product)
+    }catch(err){
+        console.error(err.message)
+        if(err.kind === 'ObjectId'){
+            return res.status(404).json({ msg : "No Object found."}) 
+        }
+        res.status(500).send('Server Error')
+    }
+})
 
 // Create Product
 router.post('/', authAdmin, async (req,res) => {
     // validate req.body
     const result = validateProduct(req.body)
-    if(!result){
+    if(result.error){
         return res.status(400).json({ error: result.error.details[0].message})
     }
     try{
@@ -53,7 +69,7 @@ router.post('/', authAdmin, async (req,res) => {
 router.put('/:id', authAdmin, async (req,res) => {
     // validate req.body
     const result = validateProduct(req.body)
-    if(!result){
+    if(result.error){
         return res.status(400).json({ error: result.error.details[0].message})
     }
     try{
@@ -91,5 +107,24 @@ router.put('/:id', authAdmin, async (req,res) => {
         res.status(500).send('Server Error')
     }
 })
+
+// DELETE Product
+router.delete('/', authAdmin, async (req,res) => {
+    try{
+        const product = await Product.findByIdAndRemove(req.params.id)
+        if (!product){
+            return res.status(404).json({error:"No Object found"})
+        }
+        return res.json({ msg : "Post removed successfully"});
+    } catch(err){
+        console.error(err.message)
+        if(err.kind === 'ObjectId'){
+            return res.status(404).json({ msg : "No Object found."}) 
+        }
+        res.status(500).send('Server Error')
+    }
+})
+
+
 
 module.exports = router;
