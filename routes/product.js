@@ -36,6 +36,29 @@ router.get('/:id', auth, async (req,res) => {
     }
 })
 
+// GET Products based on query
+router.get('/', auth, async (req,res) => {
+    qNew = req.query.new;
+    qCategory = req.query.category;
+
+    try {
+        let products;
+        if(qNew){
+            products = await Product.find().sort({createdAt : -1}).limit(10)
+        } else if (qCategory){
+            products = await Product.find({ categories : {
+                $in : [qCategory]
+            }})
+        } else {
+            products = await Product.find().sort({createdAt : -1}) 
+        }
+        res.send(products)
+    } catch (err){
+        console.error(err.message)
+        res.status(500).send('Server Error')
+    }
+})
+
 // Create Product
 router.post('/', authAdmin, async (req,res) => {
     // validate req.body
@@ -109,7 +132,7 @@ router.put('/:id', authAdmin, async (req,res) => {
 })
 
 // DELETE Product
-router.delete('/', authAdmin, async (req,res) => {
+router.delete('/:id', authAdmin, async (req,res) => {
     try{
         const product = await Product.findByIdAndRemove(req.params.id)
         if (!product){
