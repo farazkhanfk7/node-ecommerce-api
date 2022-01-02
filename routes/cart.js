@@ -2,6 +2,7 @@ const express = require('express')
 const joi = require('joi')
 const router = express.Router()
 const Cart = require('../models/Cart')
+const Product = require('../models/Product')
 const { auth, authOwner, authAdmin } = require('../middleware/auth')
 const { route } = require('./user')
 
@@ -15,23 +16,25 @@ const validateCart = (cart) => {
     return result
 }
 
+// GET cart for current user
 router.get('/', auth, async (req,res) => {
     try {
         const cart = await Cart.findOne({ user : req.user.id })
-        return res.send(cart)
+        return res.json(cart)
     } catch (err){
         console.error(err.message)
         return res.status(500).send("Server Error")
     }
 })
 
+// Get Cart by userID
 router.get('/:userId', authAdmin, async (req,res) => {
     try{
         const cart = await Cart.findOne(req.param.userId)
         if(!cart){
             return res.status(400).json({error: "No Cart found"})
         }
-        return res.send(cart)
+        return res.json(cart)
     } catch(err){
         console.error(err.message)
         if (err.kind === 'ObjectId'){
@@ -41,6 +44,7 @@ router.get('/:userId', authAdmin, async (req,res) => {
     }
 })
 
+// Create new Cart or Add to Cart
 router.post('/', auth, async (req,res) => {
     result = validateCart(req.body)
     if(result.error){
@@ -58,16 +62,71 @@ router.post('/', auth, async (req,res) => {
             }
             const cart = new Cart(newCart)
             await cart.save()
-            return res.send(cart)
+            return res.json(cart)
         } else {
             // unshift in existing cart's product array
             cart.products.unshift(req.body)
             await cart.save()
-            return res.send(cart)
+            return res.json(cart)
         }
     } catch(err){
         console.error(err.message)
         return res.status(500).send("Server Error")
+    }
+})
+
+// PUT Update product in cart
+router.put('/:productId', auth, async(req,res) => {
+    try{
+        result = validateCart(req.body)
+        if(result.error){
+            res.status(400).json({error: result.error.details[0].message })
+        }
+        // find cart for user
+        const cart = await Cart.findOne({user:req.user.id})
+        //if cart doesnt exist return error
+        if(!cart){
+            return res.status(400).json({error: "No Cart found"})
+        }
+        // if cart exist change
+        const removeIndex = cart.products.map( product => product.id ).indexOf(req.params.productId)
+        cart.products.splice(removeIndex,1);
+        cart.products.unshift(req.body);
+        await cart.save();
+        res.json(cart);
+    } catch(err){
+        console.error(err.message)
+        if(err.kind === 'ObjectId'){
+            return res.status(400).json({error: "No Product found"})
+        }
+        res.status(500).send('Server Error')
+    }
+});
+
+// Delete remove product from cart
+router.delete('/:productId', auth, async(req,res) => {
+    try{
+        // find cart for user
+        const cart = await Cart.findOne({user:req.user.id})
+        //if cart doesnt exist return error
+        if(!cart){
+            return res.status(400).json({error: "No Cart found"})
+        }
+        // if cart exist change
+        const removeIndex = cart.products.map( product => product.id ).indexOf(req.params.productId)
+        console.log(removeIndex)
+        if(!removeIndex){
+            return res.status(400).json({error: "No Product found"})
+        }
+        cart.products.splice(removeIndex,1);
+        await cart.save();
+        res.json(cart)
+    } catch(err){
+        console.error(err.message)
+        if(err.kind === 'ObjectId'){
+            return res.status(400).json({error: "No Product found"})
+        }
+        res.status(500).send('Server Error')
     }
 })
 
