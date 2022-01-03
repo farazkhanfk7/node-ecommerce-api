@@ -65,7 +65,17 @@ router.post('/', auth, async (req,res) => {
             return res.json(cart)
         } else {
             // unshift in existing cart's product array
-            cart.products.unshift(req.body)
+            const productId = req.body.product
+            const arr = cart.products.map( product => product.product.toString() )
+            const index = arr.indexOf(productId)
+            // if product is not already there in cart
+            if(index === -1){
+                cart.products.unshift(req.body)
+            } else{
+                // if product is already in cart ( remove and add new )
+                cart.products.splice(index,1);
+                cart.products.unshift(req.body)
+            }
             await cart.save()
             return res.json(cart)
         }
@@ -89,7 +99,8 @@ router.put('/:productId', auth, async(req,res) => {
             return res.status(400).json({error: "No Cart found"})
         }
         // if cart exist change
-        const removeIndex = cart.products.map( product => product.id ).indexOf(req.params.productId)
+        const arr = cart.products.map( product => product.product.toString() )
+        const removeIndex = arr.indexOf(req.params.productId)
         cart.products.splice(removeIndex,1);
         cart.products.unshift(req.body);
         await cart.save();
@@ -113,8 +124,8 @@ router.delete('/:productId', auth, async(req,res) => {
             return res.status(400).json({error: "No Cart found"})
         }
         // if cart exist change
-        const removeIndex = cart.products.map( product => product.id ).indexOf(req.params.productId)
-        console.log(removeIndex)
+        const arr = cart.products.map( product => product.product.toString() )
+        const removeIndex = arr.indexOf(req.params.productId)
         if(!removeIndex){
             return res.status(400).json({error: "No Product found"})
         }
