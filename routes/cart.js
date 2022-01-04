@@ -19,7 +19,7 @@ const validateCart = (cart) => {
 // GET cart for current user
 router.get('/', auth, async (req,res) => {
     try {
-        const cart = await Cart.findOne({ user : req.user.id })
+        const cart = await Cart.findOne({ user : req.user.id }).populate('user','name email isAdmin')
         return res.json(cart)
     } catch (err){
         console.error(err.message)
